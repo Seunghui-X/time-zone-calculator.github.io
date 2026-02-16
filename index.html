@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时差计算器</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f0f1a;
+            --card-bg: #1a1a2e;
+            --primary: #00d4ff;
+            --secondary: #7c3aed;
+            --text-primary: #e0e0e0;
+            --text-secondary: #888888;
+            --border-glow: rgba(0, 212, 255, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-image: 
+                radial-gradient(ellipse at 20% 80%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 212, 255, 0.1) 0%, transparent 50%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .title {
+            font-family: "Orbitron", sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .timezone-section {
+            margin-bottom: 28px;
+        }
+
+        .timezone-section:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .section-label {
+            font-family: "Orbitron", sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-label::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        select, input[type="date"], input[type="time"] {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300d4ff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--border-glow);
+        }
+
+        select option {
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .row .input-group {
+            flex: 1;
+        }
+
+        .result-section {
+            margin-top: 28px;
+            padding-top: 28px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-display {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid var(--border-glow);
+        }
+
+        .result-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .result-time {
+            font-family: "Orbitron", sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            text-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+            margin-bottom: 6px;
+        }
+
+        .result-date {
+            font-size: 14px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .result-diff {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .result-diff span {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .btn-row {
+            margin-top: 24px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--primary);
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 24px;
+            }
+
+            .title {
+                font-size: 22px;
+            }
+
+            .row {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .result-time {
+                font-size: 20px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-section {
+            animation: fadeIn 0.4s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">时差计算器</h1>
+        <p class="subtitle">Time Difference Calculator</p>
+        
+        <div class="card">
+            <div class="timezone-section">
+                <div class="section-label">时区 A（源时区）</div>
+                <div class="input-group">
+                    <label>选择时区</label>
+                    <select id="timezoneA"></select>
+                </div>
+                <div class="row">
+                    <div class="input-group">
+                        <label>日期</label>
+                        <input type="date" id="dateA">
+                    </div>
+                    <div class="input-group">
+                        <label>时间</label>
+                        <input type="time" id="timeA">
+                    </div>
+                </div>
+            </div>
+
+            <div class="timezone-section">
+                <div class="section-label">时区 B（目标时区）</div>
+                <div class="input-group">
+                    <label>选择时区</label>
+                    <select id="timezoneB"></select>
+                </div>
+            </div>
+
+            <div class="result-section">
+                <div class="result-display">
+                    <div class="result-label">时区 B 对应时间</div>
+                    <div class="result-time" id="resultTime">--:--</div>
+                    <div class="result-date" id="resultDate">请选择时区B</div>
+                    <div class="result-diff" id="resultDiff"></div>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn btn-secondary" id="swapBtn">⇄ 交换时区</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const commonTimezones = [
+            { value: 'Asia/Shanghai', label: '中国北京时间 (CST)' },
+            { value: 'Asia/Tokyo', label: '日本东京时间 (JST)' },
+            { value: 'Asia/Seoul', label: '韩国首尔时间 (KST)' },
+            { value: 'Asia/Singapore', label: '新加坡时间 (SGT)' },
+            { value: 'Asia/Hong_Kong', label: '香港时间 (HKT)' },
+            { value: 'Asia/Dubai', label: '阿联酋迪拜时间 (GST)' },
+            { value: 'Asia/Kolkata', label: '印度时间 (IST)' },
+            { value: 'Europe/London', label: '英国伦敦时间 (GMT/BST)' },
+            { value: 'Europe/Paris', label: '法国巴黎时间 (CET)' },
+            { value: 'Europe/Berlin', label: '德国柏林时间 (CET)' },
+            { value: 'Europe/Moscow', label: '俄罗斯莫斯科时间 (MSK)' },
+            { value: 'Africa/Cairo', label: '埃及开罗时间 (EET)' },
+            { value: 'Africa/Johannesburg', label: '南非约翰内斯堡时间 (SAST)' },
+            { value: 'America/New_York', label: '美国纽约时间 (EST/EDT)' },
+            { value: 'America/Chicago', label: '美国芝加哥时间 (CST/CDT)' },
+            { value: 'America/Denver', label: '美国丹佛时间 (MST/MDT)' },
+            { value: 'America/Los_Angeles', label: '美国洛杉矶时间 (PST/PDT)' },
+            { value: 'America/Toronto', label: '加拿大多伦多时间 (EST/EDT)' },
+            { value: 'America/Vancouver', label: '加拿大温哥华时间 (PST/PDT)' },
+            { value: 'America/Mexico_City', label: '墨西哥城时间 (CST)' },
+            { value: 'America/Sao_Paulo', label: '巴西圣保罗时间 (BRT)' },
+            { value: 'Australia/Sydney', label: '澳大利亚悉尼时间 (AEST/AEDT)' },
+            { value: 'Australia/Melbourne', label: '澳大利亚墨尔本时间 (AEST/AEDT)' },
+            { value: 'Pacific/Auckland', label: '新西兰奥克兰时间 (NZST/NZDT)' },
+            { value: 'UTC', label: '世界协调时间 (UTC)' }
+        ];
+
+        const timezoneA = document.getElementById('timezoneA');
+        const timezoneB = document.getElementById('timezoneB');
+        const dateA = document.getElementById('dateA');
+        const timeA = document.getElementById('timeA');
+        const resultTime = document.getElementById('resultTime');
+        const resultDate = document.getElementById('resultDate');
+        const resultDiff = document.getElementById('resultDiff');
+        const swapBtn = document.getElementById('swapBtn');
+
+        function populateTimezones() {
+            commonTimezones.forEach(tz => {
+                const optionA = document.createElement('option');
+                optionA.value = tz.value;
+                optionA.textContent = tz.label;
+                timezoneA.appendChild(optionA);
+
+                const optionB = document.createElement('option');
+                optionB.value = tz.value;
+                optionB.textContent = tz.label;
+                timezoneB.appendChild(optionB);
+            });
+
+            timezoneA.value = 'Asia/Shanghai';
+            timezoneB.value = 'America/New_York';
+        }
+
+        function setDefaultDateTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+
+            dateA.value = `${year}-${month}-${day}`;
+            timeA.value = `${hours}:${minutes}`;
+        }
+
+        function calculate() {
+            const tzA = timezoneA.value;
+            const tzB = timezoneB.value;
+            const dateValue = dateA.value;
+            const timeValue = timeA.value;
+
+            if (!dateValue || !timeValue) {
+                resultTime.textContent = '--:--';
+                resultDate.textContent = '请选择日期和时间';
+                resultDiff.textContent = '';
+                return;
+            }
+
+            const dateTimeStr = `${dateValue}T${timeValue}:00`;
+            const dateTimeA = new Date(dateTimeStr);
+
+            const optionsA = { 
+                timeZone: tzA, 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                hour12: false 
+            };
+            
+            const optionsB = { 
+                timeZone: tzB, 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                hour12: false,
+                weekday: 'short'
+            };
+
+            const formatterB = new Intl.DateTimeFormat('zh-CN', optionsB);
+            const formatterTime = new Intl.DateTimeFormat('zh-CN', { 
+                timeZone: tzB, 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                hour12: false 
+            });
+            const formatterDate = new Intl.DateTimeFormat('zh-CN', { 
+                timeZone: tzB, 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            });
+
+            const timeStr = formatterTime.format(dateTimeA);
+            const dateStr = formatterDate.format(dateTimeA);
+
+            const getOffset = (tz) => {
+                const now = new Date();
+                const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
+                const tzDate = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+                return (tzDate - utcDate) / (1000 * 60 * 60);
+            };
+
+            const offsetA = getOffset(tzA);
+            const offsetB = getOffset(tzB);
+            const diff = offsetB - offsetA;
+            
+            let diffText = '';
+            if (diff > 0) {
+                diffText = `时区B比时区A快 ${diff} 小时`;
+            } else if (diff < 0) {
+                diffText = `时区B比时区A慢 ${Math.abs(diff)} 小时`;
+            } else {
+                diffText = '两个时区时间相同';
+            }
+
+            resultTime.textContent = timeStr;
+            resultDate.textContent = dateStr;
+            resultDiff.textContent = diffText;
+        }
+
+        function swapTimezones() {
+            const tempTz = timezoneA.value;
+            
+            timezoneA.value = timezoneB.value;
+            timezoneB.value = tempTz;
+            
+            calculate();
+        }
+
+        timezoneA.addEventListener('change', calculate);
+        timezoneB.addEventListener('change', calculate);
+        dateA.addEventListener('change', calculate);
+        timeA.addEventListener('change', calculate);
+        swapBtn.addEventListener('click', swapTimezones);
+
+        populateTimezones();
+        setDefaultDateTime();
+        calculate();
+    </script>
+</body>
+</html>
